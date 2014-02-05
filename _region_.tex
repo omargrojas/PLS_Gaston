@@ -1,0 +1,117 @@
+\message{ !name(notas_PLS.Rnw.tex)}
+\message{ !name(notas_PLS.Rnw) !offset(3) }
+
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+
+\section{Introducci\'on}
+
+Estas notas forman parte de un Seminario de Investigaci\'on en PLS y est\'an basadas en el manual \texttt{PLS Path Modeling with R} de Gaston Sanchez. Este seminario se lleva a cabo en la Universidad Panamericana Campus Guadalajara. 
+
+PLS-PM (Partial Least Squares Path Modeling) cuenta con las siguientes posibles definiciones:
+\begin{itemize}
+  \item es el enfoque de PLS al modelamiento de equaciones estructurales
+  \item es un m\'etodo estad\'istico para estudiar complejas relaciones multivariadas existentes entre variables observadas y latentes
+  \item es un enfoque de an\'alisis de datos para estudiar un conjunto de bloques de variables observadas donde cada bloque puede definirse por una variable latente y la relaci\'on lineal que existe entre las variables latentes.
+\end{itemize}
+
+Utilizaremos el paquete \texttt{plspm} para \texttt{R}, el cual puede instalarse como sigue
+<<eval=FALSE>>=
+install.packages("plspm")
+@
+Una vez instalado, podemos cargar la librer\'ia
+<<>>=
+library("plspm")
+@
+
+\section{Caso de estudio: \'Indice de \'exito}
+
+Nuestro prop\'osito ser\'a obtener un \emph{\'indice de \'exito} usando datos del futbol Soccer espa\~nol
+<<>>=
+data(spainfoot)
+@
+El archivo de datos cuenta con 14 variables medidas en 20 equipos. A continuaci\'on vemos los datos correspondientes a los 5 primeros equipos de la base de datos
+<<>>=
+head(spainfoot, n = 5)
+@
+La descripci\'on de cada variable se da en la siguiente tabla.
+
+INSERTAR TABLA AQUI
+
+\subsection{Variables latentes y manifiestas}
+
+Una de las aplicaciones m\'as comunes de \texttt{PLS-PM} es el c\'alculo de \'indices para cuantificar alg\'un concepto clave o noci\'on de importancia. Entre estos se incluyen {\em \'Indices de Satisfacci\'on, de Motivaci\'on, de Usabilidad y de \'Exito}, entre otros. La cuesti\'on con estos conceptos es que no se pueden medir directamente. Sin embargo, es posible usar un conjunto de preguntas que de alguna manera reflejen el \'indice deseado.
+
+\subsubsection{Variables latentes}
+
+Hay veces en que las variables de nuestro inter\'es, como la satisfacci\'on o el \'exito, no pueden ser observadas ni medidas directamente. A estos conceptos se les conoce como {\bf variables latentes}, o tambi\'en llamadas {\em constructos, variables hipot\'eticas, intangibles} o {\em factores}.
+
+La parte interesante se da cuando trabajamos con conceptos te\'oricos y constructos para los cuales tendemos a a concevir relaciones causales esperadas en ellos. Por ejemplo
+\begin{itemize}
+  \item Un director de mercadotecnia propone una nueva pol\'itica para incrementar la {\em satisfacci\'on del cliente}.
+  \item Un grupo de profesores decide crear ciertas actividades extra curriculares para mejorar el {\em desempe\~no acad\'emico} de los estudiantes.
+  \item Un entrenador establece un esquema de entrenamientos para mejorar el {\em desempe\~no defensivo} de su equipo.
+\end{itemize}
+
+Dado que no hay una definici\'on formal de variables latentes, en lo siguiente las consideraremos como sigue
+\begin{itemize}
+  \item variables hipot\'eticas
+  \item ya sea imposible o muy dif\'icil de observar o medir
+  \item tomadas como variables subyacentes que ayudan a explicar la asociaci\'on entre dos o m\'as variables observadas
+\end{itemize}
+
+\subsection{Modelo juguete}
+
+Comenzaremos con el siguiente modelo simple:
+
+\begin{quote}
+Entre mejor sea la calidad del {\bf ataque}, as\'i como la calidad de la {\bf defensa}, mayor ser\'a el {\'exito.}
+\end{quote}
+La teor\'ia del modelo puede ser expresada de la siguiente forma abstracta:
+\begin{displaymath}
+exito = f(ataque, ~defensa)
+\end{displaymath}
+Tambi\'en se podr\'ia explicar como combinaci\'on lineal
+\begin{displaymath}
+exito = b_1 ataque + b_2 defensa
+\end{displaymath}
+
+\subsection{Variables manifiestas}
+
+Aunque la escenia de las variables manifiestas es que no pueden ser medidas directamente, eso no significa que no tengan sentido o sean in\'utiles. Para volverlas operativas, las variables latentes se miden indirectamente mediante variables que pueden ser observadas-medidas perfectamente. A este tipo de variables se les llama {\bf variables manifiestas}, tambi\'en conocidas como {\bf indicadores}. Asumimos que las variables manifiestas
+
+
+
+
+
+
+
+<<>>=
+# rows of the inner model matrix
+Attack = c(0, 0, 0)
+Defense = c(0, 0, 0)
+Success = c(1, 1, 0)
+
+# matrix created by row binding
+foot_inner = rbind(Attack, Defense, Success)
+
+# add column names (optional)
+colnames(foot_inner) = rownames(foot_inner)
+@
+
+
+\begin{center}
+<<fig=TRUE, echo=TRUE>>=
+# plot the inner matrix
+innerplot(foot_inner)
+@
+\end{center}
+
+
+
+
+
+
+\end{document}
+\message{ !name(notas_PLS.Rnw.tex) !offset(-117) }

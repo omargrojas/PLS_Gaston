@@ -1,0 +1,255 @@
+\documentclass{paper}
+\usepackage[margin=3.5cm]{geometry}
+\usepackage[spanish]{babel}
+
+\title{Notas de PLS}
+\author{Omar Rojas}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+
+\section{Introducci\'on}
+
+Estas notas forman parte de un Seminario de Investigaci\'on en PLS y est\'an basadas en el manual \texttt{PLS Path Modeling with R} de Gaston Sanchez. Este seminario se lleva a cabo en la Universidad Panamericana Campus Guadalajara. 
+
+PLS-PM (Partial Least Squares Path Modeling) cuenta con las siguientes posibles definiciones:
+\begin{itemize}
+  \item es el enfoque de PLS al modelamiento de equaciones estructurales
+  \item es un m\'etodo estad\'istico para estudiar complejas relaciones multivariadas existentes entre variables observadas y latentes
+  \item es un enfoque de an\'alisis de datos para estudiar un conjunto de bloques de variables observadas donde cada bloque puede definirse por una variable latente y la relaci\'on lineal que existe entre las variables latentes.
+\end{itemize}
+
+Utilizaremos el paquete \texttt{plspm} para \texttt{R}, el cual puede instalarse como sigue
+<<eval=FALSE>>=
+install.packages("plspm")
+@
+Una vez instalado, podemos cargar la librer\'ia
+<<>>=
+library("plspm")
+@
+
+\section{Caso de estudio: \'Indice de \'exito}
+
+Nuestro prop\'osito ser\'a obtener un \emph{\'indice de \'exito} usando datos del futbol Soccer espa\~nol
+<<>>=
+data(spainfoot)
+@
+El archivo de datos cuenta con 14 variables medidas en 20 equipos. A continuaci\'on vemos los datos correspondientes a los 5 primeros equipos de la base de datos
+<<>>=
+head(spainfoot, n = 5)
+@
+La descripci\'on de cada variable se da en la siguiente tabla.
+
+
+
+INSERTAR TABLA AQUI
+
+\subsection{Variables latentes y manifiestas}
+
+Una de las aplicaciones m\'as comunes de \texttt{PLS-PM} es el c\'alculo de \'indices para cuantificar alg\'un concepto clave o noci\'on de importancia. Entre estos se incluyen {\em \'Indices de Satisfacci\'on, de Motivaci\'on, de Usabilidad y de \'Exito}, entre otros. La cuesti\'on con estos conceptos es que no se pueden medir directamente. Sin embargo, es posible usar un conjunto de preguntas que de alguna manera reflejen el \'indice deseado.
+
+\subsubsection{Variables latentes}
+
+Hay veces en que las variables de nuestro inter\'es, como la satisfacci\'on o el \'exito, no pueden ser observadas ni medidas directamente. A estos conceptos se les conoce como {\bf variables latentes}, o tambi\'en llamadas {\em constructos, variables hipot\'eticas, intangibles} o {\em factores}.
+
+La parte interesante se da cuando trabajamos con conceptos te\'oricos y constructos para los cuales tendemos a a concevir relaciones causales esperadas en ellos. Por ejemplo
+\begin{itemize}
+  \item Un director de mercadotecnia propone una nueva pol\'itica para incrementar la {\em satisfacci\'on del cliente}.
+  \item Un grupo de profesores decide crear ciertas actividades extra curriculares para mejorar el {\em desempe\~no acad\'emico} de los estudiantes.
+  \item Un entrenador establece un esquema de entrenamientos para mejorar el {\em desempe\~no defensivo} de su equipo.
+\end{itemize}
+
+Dado que no hay una definici\'on formal de variables latentes, en lo siguiente las consideraremos como sigue
+\begin{itemize}
+  \item variables hipot\'eticas
+  \item ya sea imposible o muy dif\'icil de observar o medir
+  \item tomadas como variables subyacentes que ayudan a explicar la asociaci\'on entre dos o m\'as variables observadas
+\end{itemize}
+
+\subsection{Modelo juguete}
+
+Comenzaremos con el siguiente modelo simple:
+
+\begin{quote}
+Entre mejor sea la calidad del {\bf ataque}, as\'i como la calidad de la {\bf defensa}, mayor ser\'a el {\'exito.}
+\end{quote}
+La teor\'ia del modelo puede ser expresada de la siguiente forma abstracta:
+\begin{displaymath}
+exito = f(ataque, ~defensa)
+\end{displaymath}
+Tambi\'en se podr\'ia explicar como combinaci\'on lineal
+\begin{displaymath}
+exito = b_1 ataque + b_2 defensa
+\end{displaymath}
+
+\subsection{Variables manifiestas}
+
+Aunque la escenia de las variables manifiestas es que no pueden ser medidas directamente, eso no significa que no tengan sentido o sean in\'utiles. Para volverlas operativas, las variables latentes se miden indirectamente mediante variables que pueden ser observadas-medidas perfectamente. A este tipo de variables se les llama {\bf variables manifiestas}, tambi\'en conocidas como {\bf indicadores}. Asumimos que las variables manifiestas contienen informaci\'on que refleja o indica alg\'un aspecto del constructo; por lo tanto, usamos la informaci\'on contenida en los indicadores para obtener una representaci\'on aproximada de la variable latente.
+
+\subsection{Indicadores formativos y reflexivos}
+
+Las variables latentes pueden medirse de dos maneras:
+\begin{itemize}
+  \item a trav\'es de sus consecuencias o efectos que se reflejan en sus indicadores
+  \item a trav\'es de diversos indidacores que se asumen como causales de las variables latentes
+\end{itemize}
+
+En el primer caso, llamado {\em manera reflexiva}, se considera que las variables manifiestas o indicadores son causadas por las variables latentes. En el segundo caso, el de {\em manera formativa}, se supone que los constructos o variables latentes est\'an formados u originados de sus indicadores.
+En pocas palabras, los indicadores formativos se refieren a {\bf causas}, mientras que los indicadores reflectivos a {\bf efectos} de las variables latentes o constructos.
+
+Por ejemplo, en nuestro modelo juguete, para medir la calidad del ataque, tenemos dos posilbes enfoques:
+\begin{itemize}
+  \item Preguntarnos sobre los diversos estad\'isticos que {\em reflejan} el ataque, e.g. tiros a gol, tiros de esquina, goles anotados
+  \item Preguntarnos sobre posibles pr\'acticas que {\em afectan} el ataque, e.g. horas de entrenamiento, tipo de comida y n\'umero de calor\'ias en la dieta de un jugador.
+\end{itemize}
+
+\subsection{Indicadores de \'Exito, Ataque y Defensa}
+
+Hemos propuesto un modelo en el que el \'Exito depende tanto de la calidad del Ataque como de la Defensa. Estas son nuestras tres variables latentes. Ahora necesitamos construir indicadores para cada uno de estos cosntructos.
+
+\subsection{Modelo de Trayectorias}
+
+Un diagrama de trayectorias es una representaci\'on gr\'fica de las relaciones existentes entre constructos e indicadores. Tomaremos en cuenta la siguiente convenci\'on:
+\begin{enumerate}
+  \item las variables manifiestas se representan de forma rectangular
+  \item las variables latentes se representan de forma el\'iptica
+  \item las relaciones entre las distintas variables se representan a trav\'es de flechas
+\end{enumerate}
+
+\subsubsection{Modelo interior y exterior}
+
+Un modelo de trayectorias completo se compone de dos submodelos: el modelo estructural, tambi'en conocido como {\bf modelo interior} y el modelo de mediciones, o {\bf modelo exterior}.
+
+\subsubsection{Matriz del modelo interior}
+
+Un modelo interior puede ser pensado como una red y entonces ser expresado de forma matricial, con la ayuda de \texttt{inner\_matrix}, la cual es una {\em matriz diagonal inferior booleana}, i.e. una matriz cuadrada cuyos elementos en la diagonal y arriba son cero, y los elementos bajo la diagonal son ceros o unos.
+
+A continuaci\'on definimos la matrix interior:
+<<>>=
+# rows of the inner model matrix
+Attack = c(0, 0, 0)
+Defense = c(0, 0, 0)
+Success = c(1, 1, 0)
+
+# matrix created by row binding
+foot_inner = rbind(Attack, Defense, Success)
+
+# add column names (optional)
+colnames(foot_inner) = rownames(foot_inner)
+
+# la matriz es
+foot_inner
+@
+
+Ahora graficamos el modelo interior
+\begin{center}
+<<fig=TRUE, echo=TRUE>>=
+# plot the inner matrix
+innerplot(foot_inner)
+@
+\end{center}
+
+\subsubsection{Lista de modelo exterior}
+
+El modelo exterior se define utilizando una lista y un vector.
+<<>>=
+# define list of indicators: what variables are associated with
+# what latent variables
+foot_outer = list(1:4, 5:8, 9:12)
+@
+La lista de arriba contiene 3 elementos, uno para cada variable latente. Cada elemento es un vector de \'indices. Entonces, la primer variable latente, Ataque, se ha asociado con las primeras cuatro columnas de nuestro conjunto de datos; la defensa est\'a asociada a las columnas 5 a 8, mientras que el \'Exito con las 9 a 12.
+
+\subsubsection{Vector de modos}
+
+Se definen dos modos:
+\begin{enumerate}
+  \item Modo {\em A}: reflectivo
+  \item Modo {\em B}: formativo
+\end{enumerate}
+
+<<>>=
+# all latent variables are measured in a reflective way
+foot_modes = c("A", "A", "A")
+@
+
+\subsection{An\'alisis \texttt{plspm()}}
+
+Ahora que tenemos todos los ingredientes necesarios, podemos correr nuestro primer modelo PLS-PM. La funci\'on est\'a definida como
+\begin{displaymath}
+plspm(Data,~inner\_ matrix, outer \_ list, modes).
+\end{displaymath}
+Para nuestro modelo juguete tenemos
+<<>>=
+# run plspm analysis
+foot_pls = plspm(spainfoot, foot_inner, foot_outer, foot_modes)
+@
+
+\paragraph{Resultados de \texttt{plspm()}}
+
+<<>>=
+# what's in foot_pls? foot_pls
+foot_pls
+@
+
+Para ver los coeficientes de las trayectorias
+<<echo=TRUE>>=
+foot_pls$path.coefs
+@
+Consultar el modelo interior
+<<eval=TRUE, echo=TRUE>>=
+foot_pls$inner.mod
+@
+Consultar el sumario del modelo interior
+<<>>=
+foot_pls$inner.sum
+@
+O resultados resumidos de todo
+<<>>=
+summary(foot_pls)
+@
+
+\paragraph{Visualizando los resultados}
+
+Veamos los resultados del modelo interior
+\begin{center}
+<<fig=TRUE, echo=TRUE>>=
+# plotting results (inner model)
+plot(foot_pls)
+@
+\end{center}
+
+\begin{center}
+<<fig=TRUE, echo=TRUE>>=
+# plotting loadings of the outer model
+plot(foot_pls, what = "loadings", arr.width = 0.1)
+@
+\end{center}
+
+\paragraph{Mu\'estrame el \'Indice}
+
+Veamos el \'indice de los 5 primeros equipos
+<<>>=
+head(foot_pls$scores, n = 5)
+@
+
+Sin embargo, todav\'ia hay que hacer ajustes al modelo.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
